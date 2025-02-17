@@ -1,0 +1,25 @@
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
+metadata:
+  name: mlflow
+  namespace: mlops
+spec:
+  chart:
+    spec:
+      chart: mlflow
+      version: "0.7.13"
+      sourceRef:
+        kind: HelmRepository
+        name: community-charts
+  interval: 1h
+  values:
+    backendStore:
+      databaseUsername: mlflow
+      databaseName: mlflow
+    resources:
+      limits:
+        cpu: 500m
+        memory: 512Mi
+      requests:
+        cpu: 200m
+        memory: 256Mi
