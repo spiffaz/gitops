@@ -1,0 +1,26 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: base-applications
+  namespace: argocd
+spec:
+  generators:
+    - clusters:
+        selector:
+          matchLabels:
+            general-bootstrap: "true"
+  template:
+    metadata:
+      name: '{{name}}-base'
+    spec:
+      project: default
+      source:
+        repoURL: https://github.com/spiffaz/gitops.git
+        targetRevision: HEAD
+        path: base-apps
+      destination:
+        server: '{{server}}'
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
