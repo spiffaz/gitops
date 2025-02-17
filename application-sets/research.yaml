@@ -1,0 +1,27 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: research-applications
+  namespace: argocd
+spec:
+  generators:
+    - clusters:
+        selector:
+          matchLabels:
+            research-workload: "true"
+  template:
+    metadata:
+      name: '{{name}}-research'
+    spec:
+      project: default
+      source:
+        repoURL: https://github.com/spiffaz/gitops.git
+        targetRevision: HEAD
+        path: workloads/research
+      destination:
+        server: '{{server}}'
+        namespace: default
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
