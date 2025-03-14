@@ -1,0 +1,145 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: gitops-appset
+  namespace: argocd
+spec:
+  generators:
+    # Generate applications for each cluster
+    - git:
+        repoURL: https://github.com/spiffaz/gitops.git
+        revision: HEAD
+        directories:
+          - path: clusters/*/*/*
+  template:
+    metadata:
+      name: '{{path.basename}}-{{path[1]}}'
+      labels:
+        cluster: '{{path.basename}}'
+        account: '{{path[1]}}'
+    spec:
+      project: default
+      source:
+        repoURL: https://github.com/spiffaz/gitops.git
+        targetRevision: HEAD
+        path: '{{path}}'
+      destination:
+        server: '{{metadata.annotations.argocd.argoproj.io/server-addr}}'
+        namespace: '{{metadata.annotations.argocd.argoproj.io/namespace}}'
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+---
+# Base applications for all clusters
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: base-apps
+  namespace: argocd
+spec:
+  generators:
+    - clusters: {}  # Target all registered clusters
+  template:
+    metadata:
+      name: 'base-apps-{{name}}'
+    spec:
+      project: default
+      source:
+        repoURL: https://github.com/spiffaz/gitops.git
+        targetRevision: HEAD
+        path: base-apps
+      destination:
+        server: '{{server}}'
+        namespace: default
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+---
+# ML Ops workload applications
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: mlops-apps
+  namespace: argocd
+spec:
+  generators:
+    - clusters:
+        selector:
+          matchLabels:
+            mlops-workload: "true"
+  template:
+    metadata:
+      name: 'mlops-apps-{{name}}'
+    spec:
+      project: default
+      source:
+        repoURL: https://github.com/spiffaz/gitops.git
+        targetRevision: HEAD
+        path: workloads/mlops
+      destination:
+        server: '{{server}}'
+        namespace: default
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+---
+# Research workload applications
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: research-apps
+  namespace: argocd
+spec:
+  generators:
+    - clusters:
+        selector:
+          matchLabels:
+            research-workload: "true"
+  template:
+    metadata:
+      name: 'research-apps-{{name}}'
+    spec:
+      project: default
+      source:
+        repoURL: https://github.com/spiffaz/gitops.git
+        targetRevision: HEAD
+        path: workloads/research
+      destination:
+        server: '{{server}}'
+        namespace: default
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+---
+# Platform applications
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: platform-apps
+  namespace: argocd
+spec:
+  generators:
+    - clusters:
+        selector:
+          matchLabels:
+            platform-workload: "true"
+  template:
+    metadata:
+      name: 'platform-apps-{{name}}'
+    spec:
+      project: default
+      source:
+        repoURL: https://github.com/spiffaz/gitops.git
+        targetRevision: HEAD
+        path: workloads/platform
+      destination:
+        server: '{{server}}'
+        namespace: default
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
