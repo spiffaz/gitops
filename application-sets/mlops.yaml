@@ -5,22 +5,32 @@ metadata:
   namespace: argocd
 spec:
   generators:
-    - clusters:
-        selector:
-          matchLabels:
-            mlops-workload: "true"
+    - matrix:
+        generators:
+          - clusters:
+              selector:
+                matchLabels:
+                  mlops-workload: "true"
+          - git:
+              repoURL: https://github.com/spiffaz/gitops.git
+              revision: HEAD
+              directories:
+                - path: workloads/mlops/*
   template:
     metadata:
-      name: '{{name}}-mlops'
+      name: '{{name}}-{{path.basename}}'
     spec:
       project: default
       source:
         repoURL: https://github.com/spiffaz/gitops.git
         targetRevision: HEAD
-        path: workloads/mlops
+        path: '{{path}}'
+        helm:
+          valueFiles:
+            - values.yaml
+            - values-{{name}}.yaml  # Cluster-specific values file
       destination:
         server: '{{server}}'
-        namespace: default
       syncPolicy:
         automated:
           prune: true

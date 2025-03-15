@@ -1,7 +1,7 @@
 apiVersion: argoproj.io/v1alpha1
 kind: ApplicationSet
 metadata:
-  name: cluster-specific-configs
+  name: cluster-specific-configs-app-of-apps
   namespace: argocd
 spec:
   generators:
@@ -35,7 +35,6 @@ spec:
         path: '{{path}}'
       destination:
         server: '{{server}}'
-        namespace: default
       syncPolicy:
         automated:
           prune: true
