@@ -5,17 +5,28 @@ metadata:
   namespace: argocd
 spec:
   generators:
-    - git:
-        repoURL: https://github.com/spiffaz/gitops.git
-        revision: HEAD
-        directories:
-          - path: clusters/*/*/*
+    - matrix:
+        generators:
+          - git:
+              repoURL: https://github.com/spiffaz/gitops.git
+              revision: HEAD
+              directories:
+                - path: "clusters/*/*/*/*/*"  # Match clusters/aws/accountname/accountid/clustername/manifest.yaml and clusters/azure/subscriptionname/resourcegroup/clustername/manifest.yaml
+
+          - clusters: {}  # Get all registered clusters
+        # Only create applications where directory cluster name matches ArgoCD cluster name
+        template:
+          metadata:
+            annotations:
+              argocd.argoproj.io/matrix-condition: '{{name}} == {{path[4]}}'
   template:
     metadata:
-      name: '{{path.basename}}-{{path[1]}}-specific'
+      name: '{{path[5]}}-{{path[4]}}-{{path[3]}}' # clustername-[accountid/resourcegroup]-[accountname/subscriptionname]
       labels:
-        cluster: '{{path.basename}}'
-        account: '{{path[1]}}'
+        cluster: '{{name}}'
+        accountId: '{{path[3]}}'
+        accountName: '{{path[2]}}'
+        cloud: '{{path[1]}}'
     spec:
       project: default
       source:
@@ -23,7 +34,7 @@ spec:
         targetRevision: HEAD
         path: '{{path}}'
       destination:
-        server: '{{metadata.annotations.argocd.argoproj.io/server-addr}}'
+        server: '{{server}}'
         namespace: default
       syncPolicy:
         automated:
