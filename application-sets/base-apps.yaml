@@ -15,7 +15,7 @@ spec:
               repoURL: https://github.com/spiffaz/gitops.git
               revision: HEAD
               directories:
-                - path: base-apps/*
+                - path: workloads/base-apps/*
   template:
     metadata:
       name: '{{name}}-{{path.basename}}'
