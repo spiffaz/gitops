@@ -28,10 +28,13 @@ spec:
         helm:
           valueFiles:
             - values.yaml
-            - values-{{name}}.yaml  # Cluster-specific values file
+            - $values-{{name}}.yaml  # Cluster-specific values file
+          ignoreMissingValueFiles: true
       destination:
         server: '{{server}}'
       syncPolicy:
         automated:
           prune: true
           selfHeal: true
+        syncOptions:
+          - CreateNamespace=true
