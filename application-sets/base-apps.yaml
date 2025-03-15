@@ -5,19 +5,26 @@ metadata:
   namespace: argocd
 spec:
   generators:
-    - clusters:
-        selector:
-          matchLabels:
-            general-bootstrap: "true"
+    - matrix:
+        generators:
+          - clusters:
+              selector:
+                matchLabels:
+                  general-bootstrap: "true"
+          - git:
+              repoURL: https://github.com/spiffaz/gitops.git
+              revision: HEAD
+              directories:
+                - path: base-apps/*
   template:
     metadata:
-      name: '{{name}}-base'
+      name: '{{name}}-{{path.basename}}'
     spec:
       project: default
       source:
         repoURL: https://github.com/spiffaz/gitops.git
         targetRevision: HEAD
-        path: base-apps
+        path: '{{path}}'
       destination:
         server: '{{server}}'
       syncPolicy:
