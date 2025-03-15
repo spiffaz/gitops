@@ -1,0 +1,21 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  namespace: argocd
+spec:
+  project: default
+  source:
+    chart: wordpress
+    repoURL: https://charts.bitnami.com/bitnami
+    targetRevision: 17.1.11
+    helm:
+      releaseName: wordpress
+  destination:
+    server: '{{server}}'
+    namespace: wordpress
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
