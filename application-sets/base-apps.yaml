@@ -25,6 +25,10 @@ spec:
         repoURL: https://github.com/spiffaz/gitops.git
         targetRevision: HEAD
         path: '{{path}}'
+        helm:
+          valueFiles:
+            - values.yaml
+            - values-{{name}}.yaml  # Cluster-specific values file
       destination:
         server: '{{server}}'
       syncPolicy:
