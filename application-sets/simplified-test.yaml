@@ -1,0 +1,38 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: multi-cloud-clusters
+  namespace: argocd
+spec:
+  generators:
+    - matrix:
+        generators:
+          - git:
+              repoURL: https://github.com/spiffaz/gitops.git
+              revision: HEAD
+              directories:
+                - path: "clusters/*/*/*/*"  # Expects: clusters/aws/accountname/accountid/spiff-1
+          - clusters: {}  # This generator must return clusters with tokens "name" and "server"
+  template:
+    metadata:
+      name: '{{path[1]}}-{{path[2]}}-{{path[4]}}'
+      labels:
+        cloud: '{{path[1]}}'
+        accountName: '{{path[2]}}'
+        accountId: '{{path[3]}}'
+        cluster: '{{path[4]}}'
+    spec:
+      project: default
+      source:
+        repoURL: https://github.com/spiffaz/gitops.git
+        targetRevision: HEAD
+        path: '{{path}}'
+      destination:
+        server: '{{server}}'  # Should be substituted by the clusters generator’s "server" token
+        namespace: default
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+          - CreateNamespace=true
