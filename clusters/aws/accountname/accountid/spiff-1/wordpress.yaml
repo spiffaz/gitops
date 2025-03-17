@@ -2,7 +2,7 @@ apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
   # Remove the name field; the ApplicationSet will inject it.
-  namespace: argocd
+  namespace: wordpress
 spec:
   project: default
   source:
